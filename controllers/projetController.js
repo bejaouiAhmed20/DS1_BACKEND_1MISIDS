@@ -13,7 +13,16 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const filter = req.user.role === 'manager' ? {} : { proprietaire: req.user.id };
-    const projets = await Projet.find(filter).populate('proprietaire', 'nom login');
+    const { search, sortBy, order } = req.query;
+    if (search) {
+      filter.$or = [
+        { nom: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+    const sort = {};
+    if (sortBy) sort[sortBy] = order === 'desc' ? -1 : 1;
+    const projets = await Projet.find(filter).sort(sort).populate('proprietaire', 'nom login');
     res.json(projets);
   } catch (error) {
     res.status(400).json({ error: error.message });
