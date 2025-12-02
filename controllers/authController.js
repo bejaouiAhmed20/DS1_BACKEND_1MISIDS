@@ -1,5 +1,6 @@
 const authService = require('../services/authService');
 
+// Contrôleur leel l'inscription l utilisateur jdyd
 exports.register = async (req, res) => {
   try {
     const result = await authService.register(req.body);
@@ -9,6 +10,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// Contrôleur leel connexion mtee3 utilisateur
 exports.login = async (req, res) => {
   try {
     const result = await authService.login(req.body);
