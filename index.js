@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 const projetRoutes = require("./routes/projetRoutes");
 const tacheRoutes = require("./routes/tacheRoutes");
 
@@ -17,6 +18,7 @@ app.use(express.json());
 connectDB();
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/projets', projetRoutes);
 app.use('/api/taches', tacheRoutes);
 
