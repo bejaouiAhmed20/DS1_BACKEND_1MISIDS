@@ -1,25 +1,9 @@
-const User = require('../models/User');
+const userService = require('../services/userService');
 
-// Récupérer leel utilisateurs koll
+// Récupération leel utilisateurs koll
 exports.getAll = async (req, res) => {
   try {
-    const { search, sortBy, order } = req.query;
-    const filter = {};
-
-    // On va rechercher par nom ou login
-    if (search) {
-      filter.$or = [
-        { nom: { $regex: search, $options: 'i' } },
-        { login: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    // 3malna Construction de l'objet de tri
-    const sort = {};
-    if (sortBy) sort[sortBy] = order === 'desc' ? -1 : 1;
-
-    // 3malna récupération + tri + exclusion du mot de passe
-    const users = await User.find(filter).select('-motDePasse').sort(sort);
+    const users = await userService.getAllUsers(req.query);
     res.json(users);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -29,12 +13,12 @@ exports.getAll = async (req, res) => {
 // On va récupérer un seul utilisateur par ID
 exports.getById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-motDePasse');
-
-    // On a verifié ken utilisateur existe wala lee
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const user = await userService.getUserById(req.params.id);
     res.json(user);
   } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(400).json({ error: error.message });
   }
 };
@@ -42,14 +26,12 @@ exports.getById = async (req, res) => {
 // On va mettre à jour un utilisateur
 exports.update = async (req, res) => {
   try {
-    // On va exclure le mot de passe des données à mettre à jour
-    const { motDePasse, ...data } = req.body;
-
-    // On va mettre à jour l'utilisateur
-    const user = await User.findByIdAndUpdate(req.params.id, data, { new: true }).select('-motDePasse');
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const user = await userService.updateUser(req.params.id, req.body);
     res.json(user);
   } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(400).json({ error: error.message });
   }
 };
@@ -57,13 +39,12 @@ exports.update = async (req, res) => {
 // On va supprimer un utilisateur
 exports.delete = async (req, res) => {
   try {
-    // Farkassna 3al utilisateur
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // On a supprimer l'utilisateur
-    res.json({ message: 'User deleted' });
+    const result = await userService.deleteUser(req.params.id);
+    res.json(result);
   } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: error.message });
+    }
     res.status(400).json({ error: error.message });
   }
 };
